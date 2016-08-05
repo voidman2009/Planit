@@ -1,0 +1,1723 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Google Maps with Contact Form</title>
+    <meta name="description" content="This is a working demo of a contact form with Google Maps in the background. The map is dynamic and you can zoom or pan as well.">
+    <link type="text/css" rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css">
+    <link type="text/css" rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <style type="text/css">
+    #bg {
+        position:fixed;
+        top:-50%;
+        left:-50%;
+        width:200%;
+        height:200%;
+    }
+    #bg img {
+        position:absolute;
+        top:0;
+        left:0;
+        right:0;
+        bottom:0;
+        margin:auto;
+        min-width:50%;
+        min-height:50%;
+    }
+
+    #map-canvas {
+        height: 100%;
+        width: 100%;
+        position:absolute;
+        top: 0;
+        left: 0;
+        z-index: 0;
+        opacity: 0.8;
+    }
+
+    html, body{ 
+        height: 100%; 
+        margin: 0; 
+        padding: 0;
+    }
+
+    /*Beginning of style for search box*/
+    .searchWrapper {
+        position: absolute;
+        background: rgba(255, 255, 255, 0);
+        top: 36px;
+        left: 16px;
+        height: 36px;
+        width: 300px;
+        border: 6px solid #5C5C8A;
+        border-radius: 10px;
+        z-index: 2;
+    }
+    .pac-input-controls {
+        /*margin-top: 16px;*/
+        border: 6px solid #5C5C8A;
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        outline: none;
+        /*box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);*/
+        border-radius: 10px;
+        -webkit-border-radius: 10px;
+        -moz-border-radius: 10px;
+ 
+    }
+    #pac-input {
+        position: absolute;
+        top: -6px;
+        left: -12px;
+        height: 36px;
+        width: 250px;
+        background-color: rgba(255,255,255,0);
+        font-family: Roboto;
+        font-size: 13px;
+        font-weight: 300;
+        margin-left: 6px;
+        padding: 0 5px 0 8px;
+        text-overflow: ellipsis;
+        z-index: 3;
+    }
+    #pac-input::-webkit-input-placeholder {
+        color : #5C5C8A;
+        font-weight: bold;
+        opacity: 1 !important;
+    }
+    #pac-input::-moz-placeholder {
+        color : #5C5C8A;
+        font-weight: bold;
+        opacity: 1 !important;
+    }
+    #pac-input::-ms-input-placeholder {
+        color : #5C5C8A;
+        font-weight: bold;
+        opacity: 1 !important;
+    }
+    .search-icon {
+        position: absolute;
+        top: -6px;
+        left: 242px;
+        height: 36px;
+        width: 52px;
+        opacity: 1;
+        color: rgb(206,206,220);      /*This color is equivalent to rgba(5c, 5c, 8a, 0.3)*/
+        background-color: #5C5C8A;
+        border: 6px;
+        -webkit-border-top-right-radius: 10px;
+        -webkit-border-bottom-right-radius: 10px;
+        -moz-border-radius-topright: 10px;
+        -moz-border-radius-bottomright: 10px;
+        border-top-right-radius: 10px;
+        border-bottom-right-radius: 10px;
+        /*border-radius: 2px 0 0 2px;*/
+        border-color: #5C5C8A;
+        z-index: 3;
+    }
+    .search-icon:focus {
+        outline: none;
+    }
+    .search-icon:hover {
+        background-color: rgb(141, 141, 173);
+    }
+
+    /*style for the dropdown of google map searchBox*/
+    .pac-container {
+        left: 22px !important;
+        background-color: rgba(92,92,138,0.3) !important;
+        border-top: 0px !important;
+    }
+    .pac-container:after {
+        background-image: none !important;
+        height: 0px;
+    }
+    .pac-item {
+        color: #BDB9B9 !important;
+    }
+    /*End of style for search box*/
+
+    /*Beginning of style for view item*/
+    .candidateList {
+        position: absolute;
+        top: 36px;
+        width: 330px;
+        background: rgba(255, 255, 255, 0);
+        /*border: 2px solid red;*/     /*Debug Purpose*/
+        overflow-y: auto;
+        z-index: 2;
+    }
+    .candidateList::-webkit-scrollbar {
+        width: 10px;
+    }
+    .candidateList::-webkit-scrollbar * {
+        background:transparent;
+    }
+    .candidateList::-webkit-scrollbar-thumb {
+        background:#5C5C8A !important;
+    }
+    .viewWrapper {
+        position: relative;
+        top: 0px;
+        left: 15px;
+        height: 36px;
+        width: 300px;
+        background: rgba(255, 255, 255, 0);
+        border: 6px solid #5C5C8A;
+        border-radius: 10px;
+        z-index: 2;
+    }
+    .view-name-controls {
+        position: relative;
+        top: -6px;
+        left: -12px;
+        width: 250px;
+        height: 36px;
+        background-color: rgba(92,92,138,0.3);
+        font-family: Roboto;
+        font-size: 13px;
+        font-weight: 300;
+        margin-left: 6px;
+        padding: 0 5px 0 8px;
+        text-overflow: ellipsis;
+        z-index: 2;
+
+        border: 6px solid #5C5C8A;
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        outline: none;
+        border-radius: 10px;
+        -webkit-border-radius: 10px;
+        -moz-border-radius: 10px;
+
+        vertical-align: middle;
+        line-height: 24px;       /* the same as your div height */
+        -webkit-user-select: none; /* Chrome/Safari */        
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* IE10+ */
+        cursor: -webkit-grab;
+    }
+
+    .view-icon {
+        position: relative;
+        top: -42px;
+        left: 242px;
+        height: 36px;
+        width: 52px;
+        opacity: 1;
+        color: rgb(206,206,220);      /*This color is equivalent to rgba(5c, 5c, 8a, 0.3)*/
+        background-color: #5C5C8A;
+        border: 6px;
+        -webkit-border-top-right-radius: 10px;
+        -webkit-border-bottom-right-radius: 10px;
+        -moz-border-radius-topright: 10px;
+        -moz-border-radius-bottomright: 10px;
+        border-top-right-radius: 10px;
+        border-bottom-right-radius: 10px;
+        /*border-radius: 2px 0 0 2px;*/
+        border-color: #5C5C8A;
+        z-index: 2;
+        text-align: center;
+        line-height: 36px;
+    }
+    .view-icon:focus {
+        outline: none;
+    }
+    /*End of style for view item*/
+    
+    /*Beginning of style for the main panel*/
+    .middleButtons {
+        text-align: center;
+    }
+    .lbutton {
+        background-color: #5C5C8A;
+        position: absolute;
+        top: 50%;
+        width: 16px;
+        height: 16px;
+        display: none;
+        padding: 0;
+        border: none;
+        z-index: 1;
+    }
+    .rbutton {
+        background-color: #5C5C8A;
+        position: absolute;
+        top: 50%;
+        width: 16px;
+        height: 16px;
+        display: none;
+        padding: 0;
+        border: none;
+        z-index: 1;
+    }
+    .plan-panel {
+        position:absolute;
+        background: #5C5C8A;
+        height: 90%;
+        width: 4px;
+        top: 5%;
+        opacity: 0.6;
+        z-index: 1;
+        /*transition: all 1s;*/
+        cursor: default;
+    }
+
+    /*Same position as the expanded middle panel*/
+    .planWrapper {
+        position: absolute;
+        z-index: 2;
+        background: rgba(255, 255, 255, 0);
+        display: none;
+    }
+    .planList {
+        position: absolute;
+        bottom: 199px;               /*TRIANGLE_HEIGHT + MIDDLE_ITEM_PADDLE + TRIANGLE_BOTPADDLE + $('.calendarWrapper').height()*/
+        width: 330px;
+        background: rgba(255, 255, 255, 0);
+        /*border: 2px solid red;     /*Debug Purpose*/
+        overflow-y: auto;
+        z-index: 2;
+    }
+    .planList::-webkit-scrollbar {
+        width: 10px;
+    }
+    .planList::-webkit-scrollbar * {
+        background:transparent;
+    }
+    .planList::-webkit-scrollbar-thumb {
+        background:#5C5C8A !important;
+    }
+    .planItemWrapper {
+        position: relative;
+        top: 0px;
+        left: 15px;
+        height: 36px;
+        width: 300px;
+        background: rgba(255, 255, 255, 0);
+        border: 6px solid #5C5C8A;
+        border-radius: 10px;
+        z-index: 2;
+    }
+    .plan-item-controls {
+        position: relative;
+        top: -6px;
+        left: -12px;
+        width: 250px;
+        height: 36px;
+        background-color: rgba(92,92,138,0.3);
+        font-family: Roboto;
+        font-size: 13px;
+        font-weight: 300;
+        margin-left: 6px;
+        padding: 0 5px 0 8px;
+        text-overflow: ellipsis;
+        z-index: 2;
+
+        border: 6px solid #5C5C8A;
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        outline: none;
+        border-radius: 10px;
+        -webkit-border-radius: 10px;
+        -moz-border-radius: 10px;
+
+        vertical-align: middle;
+        line-height: 24px;       /* the same as your div height */
+        -webkit-user-select: none; /* Chrome/Safari */        
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* IE10+ */
+        cursor: -webkit-grab;
+    }
+
+    .plan-item-icon {
+        position: relative;
+        top: -42px;
+        left: 242px;
+        height: 36px;
+        width: 52px;
+        opacity: 1;
+        color: rgb(206,206,220);      /*This color is equivalent to rgba(5c, 5c, 8a, 0.3)*/
+        background-color: #5C5C8A;
+        border: 6px;
+        -webkit-border-top-right-radius: 10px;
+        -webkit-border-bottom-right-radius: 10px;
+        -moz-border-radius-topright: 10px;
+        -moz-border-radius-bottomright: 10px;
+        border-top-right-radius: 10px;
+        border-bottom-right-radius: 10px;
+        /*border-radius: 2px 0 0 2px;*/
+        border-color: #5C5C8A;
+        z-index: 2;
+        text-align: center;
+        line-height: 36px;
+    }
+
+    .planResultList {
+        position: absolute;
+        bottom: 105px;               /*TRIANGLE_HEIGHT + TRIANGLE_BOTPADDLE*/
+        width: 330px;
+        background: rgba(255, 255, 255, 0);
+        /*border: 2px solid red;     /*Debug Purpose*/
+        overflow-y: auto;
+        z-index: 2;
+    }
+    .planResultList::-webkit-scrollbar {
+        width: 10px;
+    }
+    .planResultList::-webkit-scrollbar * {
+        background:transparent;
+    }
+    .planResultList::-webkit-scrollbar-thumb {
+        background:#5C5C8A !important;
+    }
+
+    .startTimerWrapper {
+        position: relative;
+        top: 0px;
+        left: 15px;
+        height: 36px;
+        width: 300px;
+        background: rgba(255, 255, 255, 0);
+        border: 2px solid white;
+        border-radius: 10px;
+        z-index: 2;
+    }
+    .start-timer-controls {
+        position: relative;
+        top: -2px;
+        left: -8px;
+        width: 215px;
+        height: 36px;
+        background-color: rgba(92,92,138,0.3);
+        font-family: Roboto;
+        font-size: 13px;
+        font-weight: 300;
+        margin-left: 6px;
+        padding: 0 5px 0 8px;
+        text-overflow: ellipsis;
+        z-index: 2;
+
+        border: 2px transparent;
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        outline: none;
+        border-top-left-radius: 10px;
+        border-bottom-left-radius: 10px;
+        -webkit-border-top-left-radius: 10px;
+        -webkit-border-bottom-left-radius: 10px;
+        -moz-border-top-left-radius: 10px;
+        -moz-border-bottom-left-radius: 10px;
+
+        vertical-align: middle;
+        line-height: 24px;       /* the same as your div height */
+        -webkit-user-select: none; /* Chrome/Safari */        
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* IE10+ */
+        cursor: -webkit-grab;
+    }
+
+    .start-timer-icon {
+        position: relative;
+        top: -38px;
+        left: 212px;
+        height: 36px;
+        width: 84px;
+        opacity: 1;
+        color: rgb(206,206,220);      /*This color is equivalent to rgba(5c, 5c, 8a, 0.3)*/
+        background-color: white;
+        border: 2px;
+        -webkit-border-top-right-radius: 10px;
+        -webkit-border-bottom-right-radius: 10px;
+        -moz-border-radius-topright: 10px;
+        -moz-border-radius-bottomright: 10px;
+        border-top-right-radius: 10px;
+        border-bottom-right-radius: 10px;
+        /*border-radius: 2px 0 0 2px;*/
+        border-color: white;
+        opacity: 0.5;
+        z-index: 2;
+        text-align: center;
+        line-height: 36px;
+    }
+
+    .planResultItemWrapper {
+        position: relative;
+        top: 0px;
+        left: 15px;
+        height: 36px;
+        width: 300px;
+        background: rgba(255, 255, 255, 0);
+        border: 6px solid #5C5C8A;
+        border-radius: 10px;
+        z-index: 2;
+    }
+    .result-item-controls {
+        position: relative;
+        top: -6px;
+        left: -12px;
+        width: 220px;
+        height: 36px;
+        background-color: rgba(92,92,138,0.3);
+        font-family: Roboto;
+        font-size: 13px;
+        font-weight: 300;
+        margin-left: 6px;
+        padding: 0 5px 0 8px;
+        text-overflow: ellipsis;
+        z-index: 2;
+
+        border: 6px solid #5C5C8A;
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        outline: none;
+        border-radius: 10px;
+        -webkit-border-radius: 10px;
+        -moz-border-radius: 10px;
+
+        vertical-align: middle;
+        line-height: 24px;       /* the same as your div height */
+        -webkit-user-select: none; /* Chrome/Safari */        
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* IE10+ */
+        cursor: -webkit-grab;
+    }
+
+    .result-item-icon {
+        position: relative;
+        top: -42px;
+        left: 212px;
+        height: 36px;
+        width: 82px;
+        opacity: 1;
+        color: rgb(206,206,220);      /*This color is equivalent to rgba(5c, 5c, 8a, 0.3)*/
+        background-color: #5C5C8A;
+        border: 6px;
+        -webkit-border-top-right-radius: 10px;
+        -webkit-border-bottom-right-radius: 10px;
+        -moz-border-radius-topright: 10px;
+        -moz-border-radius-bottomright: 10px;
+        border-top-right-radius: 10px;
+        border-bottom-right-radius: 10px;
+        /*border-radius: 2px 0 0 2px;*/
+        border-color: #5C5C8A;
+        z-index: 2;
+        text-align: center;
+        line-height: 36px;
+    }
+    .showDistance {
+        position: relative;
+        text-align:center;
+        vertical-align:middle;
+        left: 15px;
+        width: 300px;
+        height: 50px;
+        line-height: 50px;
+        border-color: white;
+        background-color: white;
+        opacity: 0.5;
+        border: 4px;
+        border-radius: 10px;
+        -webkit-border-radius: 10px;
+        -moz-border-radius: 10px;
+    }
+
+    .triangle-down {
+        position: absolute;
+        background-color: transparent;
+        left: 0px;
+        right: 0px;
+        width: 312px;
+        height: 100px;
+        z-index: 1000;
+        /*border-left: 150px solid transparent;
+        border-right: 150px solid transparent;
+        border-top: 60px solid #5C5C8A;*/
+    }
+
+    .lpanel {
+        position:absolute;
+        background: #5C5C8A;
+        top: 5px;
+        left: 5px;
+        height: 90%;
+        opacity: 0.4;
+        z-index: 0;
+        -webkit-transform: skew(0deg, 5deg);
+        -moz-transform: skew(0deg, 5deg);
+        -ms-transform: skew(0deg, 5deg);
+        -o-transform: skew(0deg, 5deg);
+        transform: skew(0deg, 20deg);
+        transform-origin: top left;
+        /*transition: all 1s;*/
+        cursor: default;
+    }
+    .rpanel {
+        position:absolute;
+        background: #5C5C8A;
+        top: 5px;
+        left: 5px;
+        height: 90%;
+        opacity: 0.4;
+        z-index: 0;
+        -webkit-transform: skew(0deg, -6deg);
+        -moz-transform: skew(0deg, -6deg);
+        -ms-transform: skew(0deg, -6deg);
+        -o-transform: skew(0deg, -6deg);
+        transform: skew(0deg, -20deg);
+        transform-origin: top right;
+        float: right;
+        /*transition: all 1s;*/
+        cursor: default;
+    }
+    /*End of style for the main panel*/
+
+    /*Begin of style for the plan calendar*/
+    .dwl {
+        line-height: 30px;
+        height: 30px;
+        top: -30px;
+        left: 0;
+        text-align: center;
+        white-space: nowrap;
+        position: absolute;
+        width: 100%;
+    }
+    .dwww {
+        position: relative;
+        /*padding: 1px;*/
+    }
+    .dww {
+        overflow: hidden;
+        position: relative;
+        height: 90px;              /*The actual height of the calendar panel, now it equals to 3xitemHeight*/              
+        border-radius: 1px;
+        border-top: 1px solid transparent;
+        border-bottom: 1px solid transparent;
+    }
+    .dw-ul {
+        position: relative;
+        margin-top: 30px; 
+        transition: -webkit-transform 1s ease-out; 
+        transform: translate3d(0px, 0px, 0px);
+        z-index: 3;
+    }
+    .dw-bf {
+        -webkit-backface-visibility: hidden;
+        -webkit-perspective: 1000px;
+        backface-visibility: hidden;
+        perspective: 1000px;
+    }
+    .dw-li {
+        padding: 0 5px;
+        position: relative;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: bottom;
+        opacity: .3;
+        filter: Alpha(Opacity=30);
+        cursor: pointer;
+        -webkit-transition: opacity .2s ease-out;
+        -moz-transition: opacity .2s ease-out;
+        transition: opacity .2s ease-out;
+    }
+    .dw-li.dw-v, .dw-li.dw-fv {
+        opacity: 1;
+        filter: Alpha(Opacity=100);
+    }
+    .dwwo {
+        position: absolute;
+        z-index: 3;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+    }
+    .dwwol {
+        position: absolute;
+        z-index: 1;
+        top: 33.3%;                  /*Put the current time on the middle of the calendar panel*/
+        left: 0;
+        width: 100%;
+        pointer-events: none;
+        border-top: 1px solid #4eccc4;
+        border-bottom: 1px solid #4eccc4;
+    }
+    .calendarWrapper {
+        position: absolute;
+        width: 300px;                 /*Actual width of the calendar*/
+        background: #f7f7f7;
+        color: #454545;
+        font-size: 12px;              /*Control font-size in the calendar*/
+        border-radius: 10px;
+        -webkit-border-radius: 10px;
+        -moz-border-radius: 10px;
+        display: none;
+    }
+    .dwwc {
+        margin: 0 auto;
+        position: relative;
+        zoom: 1;
+        display: -webkit-box;
+        display: -webkit-flex;
+        display: -ms-flexbox;
+        display: flex;
+        -webkit-box-pack: center;
+        -webkit-justify-content: center;
+        justify-content: center;
+    }
+    .dwc {
+        max-width: 100%;
+        vertical-align: middle;
+        display: inline-block;
+        overflow: hidden;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+    }
+    .dwwl {
+        position: relative;
+        z-index: 5;
+    }
+    .dwfl {
+        max-width: 100%;
+        min-width: 50px;
+        padding: .1em .1em;       /*Adjust paddings between two subgroups inside the calendar*/
+        -webkit-box-flex: 1;
+        -webkit-flex: 1 auto;
+        -ms-flex: 1 auto;
+        flex: 1 auto;
+        -ms-touch-action: none;
+        touch-action: none;
+    }
+    .showBG {
+        background: rgba(78, 204, 196, .3);
+    }
+    /*End of style for the plan calendar*/
+
+    /*Following is for test use*/
+    #directions-panel {
+        font-family: 'Roboto','sans-serif';
+        line-height: 30px;
+        padding-left: 10px;
+        position: absolute;
+        left: 20px;
+        top: 80px;
+        width: 400px;
+        height: 700px;
+        color: black;
+        z-index: 10000;
+      }
+
+      #directions-panel select, #directions-panel input {
+        font-size: 15px;
+      }
+
+      #directions-panel i {
+        font-size: 12px;
+      }
+    </style>
+
+    <!--js functions to handle three background panels (including their expansions, collapsions and resize)-->
+    <script type="text/javascript">
+        var sensitiveRangeX = 30;     //Inside which ranges the expand/collapse buttons are gonna show up!
+        var sensitiveRangeY = 0;
+        //--Capture the event when showing the buttons used for
+        //--expanding or collapsing the middle panel
+        function showButtons(e) {
+            var planDim = document.getElementById('animation').getBoundingClientRect();
+            $('.lbutton').css('left', planDim.left - $('.rbutton').width());
+            $('.lbutton').css('display', 'block');
+            $('.rbutton').css('left', planDim.left + planDim.width);
+            $('.rbutton').css('display', 'block');
+        }
+
+        //--Capture the event when hiding the buttons used for
+        //--expanding or collapsing the middle panel
+        function hideButtons(e) {
+            var planDim = document.getElementById('animation').getBoundingClientRect();
+            var rangeX = (null == e ? planDim.left : e.clientX);
+            var rangeY = (null == e ? planDim.top : e.clientY);
+            var lboarder = planDim.left - sensitiveRangeX;
+            var rboarder = planDim.left + planDim.width + sensitiveRangeX;
+            var tboarder = planDim.top - sensitiveRangeY;
+            var bboarder = planDim.top + planDim.height + sensitiveRangeY;
+            //console.log( "cur : " + rangeX + "lboarder : " + lboarder + "rboarder : " + rboarder);
+            if(rangeX < lboarder || rangeX > rboarder || rangeY < tboarder || rangeY > bboarder) {
+                document.getElementById('lb').style.display = 'none';
+                document.getElementById('rb').style.display = 'none';
+            }
+        }
+
+        var isExpanded = false;                    //The current status of the middle panel
+        var ORIGIN_WIDTH = 4, EXPAND_WIDTH = 400;  //Widths for the middle panel (static var)
+        var ANIMATION_TIME = 4;
+        var BGCOLOR = '#5C5C8A';
+        var TRANSITION_TIME = 1;
+        var TRIANGLE_WIDTH = 312;                  //Width of the triangle button in the middle panel
+        var TRIANGLE_HEIGHT = 100;
+        var TRIANGLE_BOTPADDLE = 5;
+        var CALENDAR_WIDTH = 300;
+        var MIDDLE_ITEM_PADDLE = 10;               //Height between items in the middle panel
+        
+
+        //--When users click the button, the following function 
+        //--decides to expand or collapse and also show animations
+        function expandOrCollapsePanel() {
+            document.getElementById('lb').style.display = 'none';
+            document.getElementById('rb').style.display = 'none';
+            //document.getElementById('map-canvas').onmousemove = null;
+            document.getElementById('animation').onmousemove = null;
+
+            //Initiate animation
+            $('.plan-panel').css({ 'transition': TRANSITION_TIME + 's' });
+            $('.lpanel').css({ 'transition': TRANSITION_TIME + 's' });
+            $('.rpanel').css({ 'transition': TRANSITION_TIME + 's' });
+
+            var curLRPanelWidth = 0, degree = 0, xtimes = 0;
+            if (!isExpanded) { //The plan panel will expand here
+                
+                var enlarge = EXPAND_WIDTH / ORIGIN_WIDTH;
+                $('.plan-panel').css({
+                    '-webkit-transform': 'scaleX(' + enlarge + ')'
+                });
+
+                curLRPanelWidth = $(window).width() * 0.5 - WINDOW_PADDLE - EXPAND_WIDTH/2;
+                degree = Math.atan( ($(window).height() * MIDDLE_PANEL_TOP - WINDOW_PADDLE) / curLRPanelWidth ) * RADIANT;
+                xtimes = curLRPanelWidth / LRORIGIN_WIDTH;
+                $('.lpanel').css({
+                    '-webkit-transform': 'skew(0deg, ' + degree + 'deg) scaleX(' + xtimes + ')'
+                });
+                $('.rpanel').css({
+                    '-webkit-transform': 'skew(0deg, ' + (-degree) + 'deg) scaleX(' + xtimes + ')'
+                });
+
+                isExpanded = true;
+                
+            } else {           //Otherwise the panel collapses
+
+                $('.planWrapper').css({ 'display': 'none' });
+                var shrink = ORIGIN_WIDTH / EXPAND_WIDTH;
+                $('.plan-panel').css({
+                    '-webkit-transform': 'scaleX(1)'
+                });
+                prevLRPanelWidth = $(window).width() * 0.5 - WINDOW_PADDLE - EXPAND_WIDTH/2;
+                curLRPanelWidth = $(window).width() * 0.5 - WINDOW_PADDLE - ORIGIN_WIDTH/2;
+                degree = Math.atan( ($(window).height() * MIDDLE_PANEL_TOP - WINDOW_PADDLE) / curLRPanelWidth ) * RADIANT;
+                xtimes = curLRPanelWidth / LRORIGIN_WIDTH;
+                $('.lpanel').css({
+                    '-webkit-transform': 'skew(0deg, ' + degree + 'deg) scaleX(' + xtimes + ')'
+                });
+                $('.rpanel').css({
+                    '-webkit-transform': 'skew(0deg, ' + (-degree) + 'deg) scaleX(' + xtimes + ')'
+                });
+
+                isExpanded = false;
+            }
+
+            //After animation
+            setTimeout(function(){
+                //Shut down animation
+                $('.plan-panel').css({ 'transition': '0s' });
+                $('.lpanel').css({ 'transition': '0s' });
+                $('.rpanel').css({ 'transition': '0s' });
+                document.getElementById('animation').onmousemove = showButtons;
+
+                //After the middle panel indeed gets expanded
+                if (isExpanded) {
+                    var planDim = document.getElementById('animation').getBoundingClientRect();
+                    $('.planWrapper').css({
+                        'left': planDim.left + 'px',
+                        'top': planDim.top + 'px',
+                        'width': planDim.width + 'px',
+                        'height': planDim.height + 'px',
+                        'display': 'block'
+                    });
+                    $('.planList').css({
+                        'left': 0.5 * ( planDim.width - $('.planList').width() ) + 'px'
+                        //'height': ( planDim.height - TRIANGLE_BOTPADDLE - TRIANGLE_HEIGHT - $('.planList').position().top ) + 'px'
+                    });
+                    $('.triangle-down').css({
+                        'left': 0.5 * ( planDim.width - TRIANGLE_WIDTH ) + 'px',
+                        'bottom': TRIANGLE_BOTPADDLE + 'px'
+                    });
+
+                    $('.calendarWrapper').css({
+                        'left': 0.5 * ( planDim.width - CALENDAR_WIDTH ) + 'px',
+                        'bottom': ( TRIANGLE_HEIGHT + TRIANGLE_BOTPADDLE ) + 'px',
+                        'display': 'block'
+                    });
+                }
+            }, TRANSITION_TIME * 1000);
+        }
+
+
+        //--Function get executed when the size of window is changed
+        //--Basically resize three panels (left, middle and right)
+        var WINDOW_PADDLE = 5;
+        var ITEM_TOWINDOW_PADDLE = 16;
+        var ITEM_BORDER = 6;
+        var IS_FIRSTTIME = true;
+        var MIDDLE_PANEL_TOP = 0.05;
+        var RADIANT = 57.2958;
+        var LRORIGIN_WIDTH = 1;
+
+        function windowResize() {
+            var midPanelLeft = 0, rightPanelLeft = 0, lrPanelWidth = 0;
+            var planDim = document.getElementById('animation').getBoundingClientRect();
+            if (isExpanded) {
+                rightPanelLeft = 0.5 * $(window).width() + EXPAND_WIDTH / 2;
+                lrPanelWidth = 0.5 * $(window).width() - WINDOW_PADDLE - EXPAND_WIDTH / 2;
+                midPanelLeft = 0.5 * $(window).width() - ORIGIN_WIDTH / 2;   //Actually it's the middle point of the plan panel
+            } else {
+                rightPanelLeft = 0.5 * $(window).width() + ORIGIN_WIDTH / 2;
+                lrPanelWidth = 0.5 * $(window).width() - WINDOW_PADDLE - ORIGIN_WIDTH / 2;
+                midPanelLeft = WINDOW_PADDLE + lrPanelWidth;
+            }
+            $('.plan-panel').css({
+                'height': '90%',
+                'top': '5%',
+                'left': midPanelLeft + 'px'
+            });
+            $('.planWrapper').css({
+                'height': planDim.height + 'px',
+                'top': planDim.top + 'px',
+                'left': planDim.left + 'px'
+            });
+            $('.planList').css({
+                'left': 0.5 * ( planDim.width - $('.planList').width() ) + 'px'
+                //'height': ( planDim.height - TRIANGLE_BOTPADDLE - TRIANGLE_HEIGHT - $('.planList').position().top ) + 'px'
+            });
+            
+
+            //console.log('left percentage = ' + midPanelLeftPercent);
+            var degree = Math.atan( ($(window).height() * MIDDLE_PANEL_TOP - WINDOW_PADDLE) / lrPanelWidth ) * RADIANT;
+            $('.lpanel').css({
+                'width': lrPanelWidth + 'px',
+                '-webkit-transform': 'skew(0deg, ' + degree + 'deg)'
+            });
+            $('.rpanel').css({
+                'left': rightPanelLeft + 'px',
+                'width': lrPanelWidth + 'px',
+                '-webkit-transform': 'skew(0deg, ' + (-degree) + 'deg)'
+            });
+            LRORIGIN_WIDTH = lrPanelWidth;
+
+            $('.candidateList').css({
+                'left': ($(window).width() - $('.candidateList').width() - ITEM_TOWINDOW_PADDLE) + 'px',
+                'height': ( $(window).height() * (1-MIDDLE_PANEL_TOP*2) - $('.candidateList').position().top ) + 'px'
+            });
+        }
+    </script>
+
+    <!--Canlendar control on the plan panel-->
+    <script type="text/javascript">
+        var pixels = [0, 0, 0, 0], 
+            itemHeight = 30, 
+            pr = 'webkit';
+        var scrollCount = 0, countFlag = 0, curPanel = 'null';
+        function onScroll(ev, cur) {
+            if (true) {
+                //If the user changes to a different panel, reset all the parameters
+                if (curPanel != cur.id){
+                    countFlag = 0; scrollCount = 0;
+                    curPanel = cur.id;
+                }
+                ev.preventDefault();
+                ev = ev.originalEvent || ev;
+
+                var delta = ev.wheelDelta || ev.deltaY || ev.detail, //Up if delta is positive, Down otherwise
+                    t = $('.dw-ul', cur);
+                var childDivNum = $('.dw-bf', cur).children().size();
+
+                if(0 == countFlag && delta != 0) {
+                    countFlag = delta;
+                    scrollCount ++;
+                } else {
+                    if(delta * countFlag > 0) scrollCount ++;           //If on the same direction, plus one
+                    else if(delta * countFlag < 0) {scrollCount = 0; countFlag = 0;}   //Otherwise reset the scrollCount
+                }
+                
+                //If the user scroll on one direction more than two times, we show the effects of scrolling
+                if(scrollCount > 2) {
+                    scrollCount = 0;
+                    countFlag = 0;
+                    //setGlobals(t);
+                    var test = (delta < 0 ? -itemHeight : itemHeight) - pixels[parseInt(curPanel)];
+                    scroll(t, childDivNum, ((delta < 0 ? -itemHeight : itemHeight) - pixels[parseInt(curPanel)]) / itemHeight);
+                }
+            }
+        }
+
+        function scroll(t, childNum, val) {
+            var px = -val * itemHeight,
+                style = t[0].style;
+
+            if(px > 0 || px < (-itemHeight*(childNum-1))) return;     //If reaching the boundary, cancel the scroll
+            pixels[parseInt(curPanel)] = px;
+            style[pr + 'Transition'] = '-webkit-transform 0.4s ease-out';
+            style[pr + 'Transform'] = 'translate3d(0,' + px + 'px,0)';
+        }
+
+        //When a user tries to click on an option, select that
+        var validIndex = 2;
+        var finalOptionY = 0;
+        function selectItem(event, cur) {
+            if (curPanel != cur.id) {
+                curPanel = cur.id;
+            }
+            finalOptionY = $('.dwwol').offset().top;
+
+            var target = $('.dw-ul', cur);
+            var optionsTopY = target.offset().top;       //Y-coordinate of the top panel
+            var curCoordY = event.clientY;               //Current Y-coordinate of the cursor
+            var curIndex = Math.floor((curCoordY - optionsTopY) / itemHeight);
+            var childOpNum = $('.dw-bf', cur).children().size();
+            if (curIndex >= 0 && curIndex < childOpNum){
+                //If the index is valid, then assign the current option as selected
+                var li = $($('.dw-li', cur)[curIndex]);
+                li.addClass('showBG');
+                setTimeout(function() {
+                    li.removeClass('showBG');
+                }, 150);
+
+                //itemGap means how many items show move, if itemGap < 0, the whole list shift down, otherwise go up
+                var itemGap = Math.floor(Math.abs(curCoordY - finalOptionY) / itemHeight);
+                if (curCoordY < finalOptionY) {
+                    itemGap = -itemGap - 1;
+                }
+                scroll( target, childOpNum, (itemGap * itemHeight - pixels[parseInt(curPanel)]) / itemHeight);
+            }
+        }
+    </script>
+
+    <!--js functions for loading the map, and receiving inputs from users-->
+    <script type="text/javascript">
+        //google.maps.event.addDomListener(window, 'load', initialize);
+        function loadScript() {
+            //Load the google map js asynchronously
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyAQZ8WzaqQoe1kOlhtITON_i6J91EbsaoQ' +
+                '&signed_in=false&callback=initialize&libraries=places';    //The callback function would be initialize()
+            //script.src = 'https://maps.googleapis.com/maps/api/js';
+            document.body.appendChild(script);
+            windowResize();
+        }
+        window.onload = loadScript;
+        //google.maps.event.addDomListener(window, 'load', initialize);
+        //Listener when the size of window has been changed
+        window.addEventListener('resize', windowResize);
+
+        //Initialize the properties of the canvas which is used to load the map
+        //All html elements related to map should be initialized here
+        var map;
+        var potentialSights = [];            //Place objects for each correspond sight (Original copy, if some sights have been removed, it requires to be modified as well)
+        var locationObjs = [];               //The location object for each place, initialized and used in the function of planing
+        var currentPlace = null;             //The current place selected by user
+        var markers = [];                    //Markers for all valid places
+        var autoComplete = null;             //SearchBox on the upperleft corner
+        var bounds = null;                   //Map bounds, used to put all markers under a proper scale
+        function initialize() {
+            var mapOptions = {
+                center: { lat: 40.712784, lng: -74.005941},   //(latitude, longitude) for New York
+                zoom: 14,
+                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                disableDefaultUI: true,
+                mapTypeControl: false
+            };
+
+            map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+            //Change the behavior of the input box
+            // Create the search box and link it to the UI element.
+            var button = (document.getElementById('map-button'));
+            map.controls[google.maps.ControlPosition.TOP_CENTER].push(button);
+            button = (document.getElementById('plan-button'));
+            map.controls[google.maps.ControlPosition.TOP_CENTER].push(button);
+
+            /*var input = (document.getElementById('pac-input'));
+            map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+            var searchBox = new google.maps.places.SearchBox(input);*/
+            autoComplete = new google.maps.places.Autocomplete(
+                (document.getElementById('pac-input')),{
+                    types: []
+                });
+            //Show all places that the user put into the search box
+            bounds = new google.maps.LatLngBounds ();
+            autoComplete.addListener('place_changed', function() {
+                currentPlace = autoComplete.getPlace();
+                //addPlaces(map, markers, currentPlace, potentialSights, bounds);    //Register a listener when user add new places
+            });
+
+            //Create the triangle-down button in the plan panel
+            var canvas = document.getElementById('canvas');
+            var context = canvas.getContext('2d');
+            var canvWidth = $('.triangle-down').width();
+            var canvHeight = $('.triangle-down').height();
+            
+            //With rounded corners, require further tuning
+            context.lineJoin = "round";
+            context.lineWidth = 12;
+
+            context.beginPath();
+            context.moveTo(156, canvHeight-context.lineWidth);
+            context.lineTo(canvWidth-context.lineWidth, 15);
+            context.lineTo(context.lineWidth, 15);
+            context.closePath();
+            context.strokeStyle="#5C5C8A";
+            context.stroke();
+            context.fillStyle="#5C5C8A";
+            context.fill();
+        }
+
+        function addPlaces(map, markers, place, sights, bounds) {
+            //  Create a new viewpoint bound
+            sights.push(place);
+            //Get the image used as the marker of the current place
+            var image = {
+                url: place.icon,
+                size: new google.maps.Size(71, 71),
+                origin: new google.maps.Point(0, 0),
+                anchor: new google.maps.Point(17, 34),
+                scaledSize: new google.maps.Size(25, 25)
+            };
+
+            // Create a marker for each place.
+            var marker = new google.maps.Marker({
+                map: map,
+                icon: image,
+                title: place.name,
+                position: place.geometry.location
+            });
+            markers.push(marker);
+            //Append the current marker
+            bounds.extend(marker.getPosition());
+            //Fit these bounds to the map
+            map.fitBounds(bounds);
+        }
+    </script>
+
+    <!--js functions for changing the background -->
+    <script type="text/javascript">
+        function changeBackGround(mapCanvasId, backPicId, mapButtonId, backButtonId){
+            if(document.getElementById(mapCanvasId).style.display == 'none'){
+                document.getElementById(mapCanvasId).style.display = 'block';
+                document.getElementById(backPicId).style.display = 'none';
+                document.getElementById('invisible').style.display = 'block';
+                document.getElementById('plan-wrapper').style.display = 'none';
+                //When the display was assigned to 'none', the size of the map has been changed
+                //Therefore after showing the map again, event.trigger() should be invoked
+                var center = map.getCenter();
+                google.maps.event.trigger(map, 'resize');
+                map.setCenter(center);
+                //The button used to shift the background
+                document.getElementById(mapButtonId).style.display = 'block';
+                document.getElementById(backButtonId).style.display = 'none';
+                windowResize();         //Initialization of three main panels
+                
+            }else{
+                document.getElementById(mapCanvasId).style.display= 'none';
+                //Set our own background
+                document.getElementById(backPicId).style.display= 'block';
+                //The map button disappears
+                document.getElementById(mapButtonId).style.display = 'none';
+                document.getElementById(backButtonId).style.display = 'block';
+                document.getElementById('invisible').style.display = 'none';
+            }
+        }
+    </script>
+    
+    <!--Potential sights listed on the right panel -->
+    <script type="text/javascript">
+        //Add the current view place to the candidate list
+        var VIEW_ORIGIN_TOP = 36, VIEW_PADDLE = 10, VIEW_BORDER = 6*2;
+        //Add a class here, each object represents a view item, and the id of each view item stands for its index in the array
+        function viewObject(placeId, isMovedToMiddle) {
+            this.placeId = placeId;
+            this.isMovedToMiddle = isMovedToMiddle;
+        }
+        var viewItemObjects = [];         //Each viewObject associates with a view item
+        var viewCount = 0;                //Current number of views in the candidateList
+
+        //Add new candidates from searchBox to the right panel
+        function addViewPlace() {
+            if (null == currentPlace) return;
+            viewCount ++;
+            addPlaces(map, markers, currentPlace, potentialSights, bounds);
+
+            var newViewItem = $('.viewItem:first-child').clone(true);
+            newViewItem.attr('id', currentPlace.place_id);                   //Each view item is binded with a specific place_id
+            newViewItem.css({
+                'display': 'block'
+            });
+            newViewItem.children('.viewWrapper').children('.view-name-controls').html(currentPlace.name);
+            newViewItem.appendTo('.candidateList');
+        }
+
+        function deleteViewPlace(cur) {
+            viewCount --;
+            //Remove the current item from the candidateList
+            $(cur).parent().parent().animate({
+                height: '0px',
+                opacity: 0
+            }, 400, function() {
+                //Remove the current place from the potentialSights array and markers
+                var curIndex = 0;
+                var curId = $(cur).parent().parent().attr('id');
+                $(cur).parent().parent().remove();
+
+                for(;curIndex < potentialSights.length;curIndex ++){
+                    if(potentialSights[curIndex].place_id == curId) break;
+                }
+                console.log(potentialSights[curIndex].name);
+                potentialSights.splice(curIndex, 1);
+                var curRemoved = markers.splice(curIndex, 1);
+                curRemoved[0].setMap(null);
+                //Refresh the markers
+                bounds = new google.maps.LatLngBounds();
+                for (curIndex = 0; curIndex < markers.length; curIndex ++){
+                    //Append the current marker
+                    bounds.extend(markers[curIndex].getPosition());
+                }   //Refresh the global bounds, since API only provides the way to extend*/
+                map.fitBounds(bounds);
+            });
+        }
+
+        var VIEW_SHIFT = 30;                         //Distance shifted to the left for view items
+        function selectView(cur) {
+            var wrapperPtr = cur.parentNode;         //viewWrapper
+            //console.log(wrapperPtr.className);
+            wrapperPtr.style.left = '0px';
+            wrapperPtr.style.transition = 'all 0.5s ease-in-out';
+
+            //When the cursor enters the control, assign it with the default value
+            cur.style.cursor = '-webkit-grab';
+            isMouseDown = false;
+        }
+        function putbackView(cur) {
+            var wrapperPtr = cur.parentNode;
+            //console.log(wrapperPtr.className);
+            //wrapperPtr.style.left = (parseInt(wrapperPtr.style.left) + VIEW_SHIFT) + 'px';
+            wrapperPtr.style.left = '15px';
+            wrapperPtr.style.transition = 'all 0.5s ease-in-out';
+
+            //When the cursor is out of the range of the control, assign it with the default value
+            cur.style.cursor = '-webkit-grab';
+            isMouseDown = false;
+        }
+
+        var isMouseDown = false;
+        var moveToMiddle = false;
+        var beginX = -1;
+        var planSights = [];                          //Used to store all candidates that have been moved to the middle panel
+        function checkDragFlag(event, cur) { 
+            isMouseDown = true; 
+            beginX = event.x;
+        }
+        function uncheckDragFlag(cur) { 
+            isMouseDown = false; 
+            cur.style.cursor = '-webkit-grab';
+        }
+
+        //Move the candidates from the right panel to the plan panel
+        function dragViewItem(event, cur) { 
+            if(isMouseDown){
+                cur.style.cursor = '-webkit-grabbing';                               //change the shape of the cursor
+                if(isExpanded && (event.x < (beginX - 50)) && !moveToMiddle) {       //drag the current item to the middle panel
+                    $(cur.parentNode).animate({opacity: 0}, 200);
+                    moveToMiddle = true;
+
+                    //Move the current item to the middle panel, first 
+                    //make the item disappear from the right panel
+                    $(cur).parent().parent().animate({
+                        height: '0px',
+                        opacity: 0
+                    }, 400, function() {
+                        $(cur).parent().parent().remove();
+
+                        //Make the same item show up in the middle panel
+                        var viewText = cur.textContent;
+                        var newViewItem = $('.planItem:first-child').clone(true);
+                        newViewItem.css({'display':'block'});
+                        newViewItem.children('.planItemWrapper').children('.plan-item-controls').html(viewText);
+                        $('.planList').prepend(newViewItem);
+                        moveToMiddle = false;
+
+                        //Then add the current candidate to the planSights list
+                        var curId = $(cur).parent().parent().attr('id');               //Place_id for the current candidate
+                        var curIndex = 0;
+                        for(;curIndex < potentialSights.length;curIndex ++){
+                            if(potentialSights[curIndex].place_id == curId) break;
+                        }
+                        console.log("place " + potentialSights[curIndex].name + "has been added to planList");
+                        planSights.push(potentialSights[curIndex]);
+                    });
+                }
+            }
+        }
+    </script>
+
+    <!--js functions for plan calculations-->
+    <script type="text/javascript">
+      //Call findShortestPlan() to get the list of sights which are sorted by time
+      function planIt(){
+        //Before trying to find the shortest paths, we need to initialize the time to start
+        var selectedDay = -pixels[0] / itemHeight;          //0-6 represents Monday through Sunday
+        var selectedHour = -pixels[1] / itemHeight;         //0-11 represents 1 o'clock through 12 o'clock
+        var selectedMin = -pixels[2] / itemHeight;          //0-11 represents 0 to 55 minutes with interval of 5 minutes
+        var amOrPm = -pixels[3] / itemHeight;               //0 represents AM, 1 stands for PM
+
+        initDay = selectedDay;
+        initTime = selectedHour * 60 + selectedMin;
+        if(11 == selectedHour && 0 == selectedMin){         //Notice that 12:00am means 0:00, the starting point of a day; 12:00pm means noon.
+            initTime += (amOrPm > 0 ? 0 : 720);
+        }else{
+            initTime += (amOrPm > 0 ? 720 : 0);
+        }
+        findShortestPlan();
+      }
+
+      //After obtaining plan result, renew the plan panel
+      function addResultItem(idA, idB, showDistFlag){
+        if(idA < 0) return;
+        var newResultItem = $('.planResultItem:first-child').clone(true);
+        newResultItem.attr('id', planSights[idA].place_id);         //Each view item is binded with a specific place_id
+        newResultItem.css({
+            'display': 'block'
+        });
+        newResultItem.children('.planResultItemWrapper').children('.result-item-controls').html(planSights[idA].name);
+        if(!showDistFlag || idB < 0){
+            newResultItem.children('.showDistance').css({
+                'display': 'none'
+            });
+        }else{
+            newResultItem.children('.showDistance').css({
+                'display': 'block'
+            });
+            newResultItem.children('.showDistance').html(parseInt(distances[idA][idB]) + 'minutes');
+        }
+        $('.planResultList').prepend(newResultItem);
+      }
+
+      function reformPlanPanel(planResultList){
+        if(null == planResultList || planResultList.length < 2) return;
+        //First remove the previous planList and calendarWrapper (make them invisible)
+        $('.planList').css({
+            'display': 'none'
+        });
+        $('.calendarWrapper').css({
+            'display': 'none'
+        });
+        var planDim = document.getElementById('animation').getBoundingClientRect();
+        $('.planResultList').css({
+            'left': 0.5 * ( planDim.width - $('.planResultList').width() ) + 'px'
+        });
+
+        //Then show the plan result
+        var prevIndex = planResultList.length-1, curIndex = -1;
+        addResultItem(prevIndex, curIndex, false);
+        for(var i = planResultList.length-1;i > 0;i --){
+            prevIndex = planResultList[i-1];
+            curIndex = planResultList[i];
+            addResultItem(prevIndex, curIndex, true);
+        }
+        var startTimer = $('.startTimerWrapper').clone(true);
+        startTimer.css({
+            'display': 'block'
+        });
+        $('.planResultList').prepend(startTimer);
+      }
+
+      //Main functionality, find the shortest routes that covers all sights at least once
+      var distances;
+      var panel;
+      function findShortestPlan(){
+        if(planSights.length < 1) return;
+        //After obtaining all markers, next step is to get their location information and routes between each pair
+        panel = document.getElementById("directions-panel");         //panel is for test
+        panel.innerHTML = '';
+        for(var i = 0;i < planSights.length;i ++){
+          //--panel.innerHTML += '<b>Place Name : ' + potentialSights[i].geometry.location + '</b><br>';
+          locationObjs.push(planSights[i].geometry.location);
+        }
+
+        //Two dimensional array, distances[i][j] stands for the distance between position i and j, default unit is meter
+        distances = new Array(locationObjs.length);
+        for(var i = 0;i < locationObjs.length;i ++){
+          distances[i] = new Array(locationObjs.length);
+        }
+
+        if(locationObjs.length > 1){
+          //Assigning origins and destinations to get pairwise distances
+          var service = new google.maps.DistanceMatrixService();
+          service.getDistanceMatrix(
+            {
+              origins: locationObjs,
+              destinations: locationObjs,
+              travelMode: google.maps.TravelMode.DRIVING,
+              avoidHighways: false,
+              avoidTolls: false,
+            }, function callback(response, status) {
+              if (status != google.maps.DistanceMatrixStatus.OK) {
+                alert('Error was: ' + status);
+              } else {
+                var originList = response.originAddresses;
+                var destinationList = response.destinationAddresses;
+                for(var i = 0;i < originList.length;i ++){
+                  var results = response.rows[i].elements;         //Results from position i to all the others
+                  for(var j = 0;j < results.length;j ++){
+                    if(i == j) distances[i][j] = 0;
+                    else{
+                      //distances[i][j] = results[j].distance.value / 1000;   //Measured by kilo meters
+                      distances[i][j] = results[j].duration.value / 60;   //Measured by minutes       
+                      //--panel.innerHTML += '<b> distance : '+results[j].distance.text+'</b><br>';
+                    }
+                  }
+                }
+                //After obtaining all pairwise distance, solve the TSP problem. Assuming the index of start point is 0
+                var st = 0;
+                var tmpList = new Array(distances.length), resultList = [], visitFlags = new Array(distances.length);
+                for(var i = 0;i < distances.length;i ++) visitFlags[i] = false;
+                //The starting point has been visited and included in the current path
+                visitFlags[st] = true;
+                tmpList[0] = st;
+                recurSolveTSP(st, visitFlags, 1, initTime - defVisitDuration, tmpList, resultList);
+                reformPlanPanel(resultList);
+                //For test use : Output the optimized route
+                if(null == resultList || resultList.length < 1){
+                  panel.innerHTML += '<b> There is no valid route for you to visit!</b><br>';
+                  return;
+                }
+                for(var i = 1;i < resultList.length;i ++){
+                  var prev = resultList[i-1], cur = resultList[i];
+                  panel.innerHTML += '<b> From : '+planSights[prev].name+' To : '+planSights[cur].name+'-->'+ Math.round(distances[prev][cur])+'minutes</b><br>';
+
+                  //Test for open-close information
+                  try{
+                    panel.innerHTML += planSights[prev].name + '<b> Open at : '+planSights[prev].opening_hours.periods[initDay].open.time + '</b><br>';
+                  }catch(e){
+                    panel.innerHTML += '<b> No open time for ' + planSights[prev].name + '</b><br>';
+                  }
+                  try{
+                    panel.innerHTML += planSights[cur].name + '<b> Open at : '+planSights[cur].opening_hours.periods[initDay].open.time + '</b><br>';
+                  }catch(e){
+                    panel.innerHTML += '<b> No open time for ' + planSights[cur].name + '</b><br>';
+                  }
+                }
+              }
+          });
+        }
+      }
+
+
+      function hhmmToMinutes(formatTime){
+        var hour = Number(formatTime.substring(0, 2));
+        var minutes = Number(formatTime.substring(2, 4));
+        return 60 * hour + minutes;
+      }
+      var minVal = Number.MAX_VALUE;  //Keep track of the current minimum distances during search
+      var initDay = -1;  //0 means Sunday, 1-6 means Monday through Saturday (Local time)
+      var initTime = -1;  //Time to start the travel for that day (minutes started from 0:00) 
+      var defVisitDuration = 30;  //Default length of time for staying at a place (minutes)
+      /*------------------------------------------------------------------------------------
+      curIndex: Position id for the current node in the graph. Detail info about the place
+                can be retrieved from planSights[]
+      visitFlags: The i-th flag stands for that whether position i has been visited under 
+                  current round of search
+      stepCount: Track that whether the path covers all nodes in the graph
+      tmpVal: Keep track of the current summation of the distance(time), initialized as initTime
+      tmpList: Store nodes along the current path
+      resultList: Used to store the final result
+      --------------------------------------------------------------------------------------*/
+      function recurSolveTSP(curIndex, visitFlags, stepCount, tmpVal, tmpList, resultList){
+        var tmpOpeningHour = planSights[curIndex].opening_hours;
+        if(tmpOpeningHour != null && tmpOpeningHour.periods[initDay].close != null){
+          //Only in this case, the place has limited duration for visitors
+          //And here the curTime should not exceed the close time
+          if(hhmmToMinutes(tmpOpeningHour.periods[initDay].close.time) <= (tmpVal + defVisitDuration)) return;
+        }
+        if(stepCount >= visitFlags.length){
+            //panel.innerHTML += '<b> tmpVal = ' + tmpVal + 'minVal = ' + minVal + '</b><br>';
+            if(tmpVal < minVal){
+                minVal = tmpVal;
+                //if(null == resultList || resultList.length < 1) resultList = new Array(tmpList.length);
+                resultList.length = 0;
+                for(var i = 0;i < tmpList.length;i ++){
+                    resultList.push(tmpList[i]);
+                }
+            }
+            return;
+        }
+        for(var i = 0;i < visitFlags.length;i ++){
+            if(true == visitFlags[i]) continue;
+            //panel.innerHTML += '<b> tmpVal = ' + tmpVal + 'dist = ' + distances[curIndex][i] + '</b><br>';
+            tmpVal += (defVisitDuration + distances[curIndex][i]);
+            visitFlags[i] = true;
+            tmpList[stepCount ++] = i;
+            //panel.innerHTML += '<b> tmpVal = ' + tmpVal + '</b><br>';
+            recurSolveTSP(i, visitFlags, stepCount, tmpVal, tmpList, resultList);
+            stepCount --;
+            visitFlags[i] = false;
+            tmpVal -= (defVisitDuration + distances[curIndex][i]);
+        }
+      }
+    </script>
+
+</head>
+
+<body>
+    <div id="directions-panel"></div>
+    <div id="map-canvas" style="display:none" onmousemove="hideButtons(event)"></div>
+
+    <!-- The whole plan panel-->
+    <div id="invisible" style="display:none">
+        <div id="leftPanel" class="lpanel" onmousemove="hideButtons(event)">
+        </div>
+
+        <!-- The upper-left search box-->
+        <div id="searchBoxWrapper" class="searchWrapper">
+            <input id="pac-input" class="pac-input-controls" type="text" placeholder="Sight Address">
+            <button class="search-icon" onclick="addViewPlace()"><i class="fa fa-search"></i></button>
+        </div>
+
+        <!-- Each view item dynamically created on the upper-right of the panel-->
+        <div class="candidateList">
+            <div class="viewItem" style="display: none;">
+                <div class="viewWrapper">
+                    <div class="view-name-controls" onmouseenter="selectView(this)" onmouseout="putbackView(this)" onmousedown="checkDragFlag(event, this)" onmouseup="uncheckDragFlag(this)" onmousemove="dragViewItem(event, this)" ondblclick="deleteViewPlace(this)">
+                    </div>
+                    <div class="view-icon"><i class="fa fa-picture-o" style="line-height: inherit;"></i></div>
+                </div>
+                <div style="height: 10px; width: 10px"></div>
+            </div>
+        </div>
+
+        <!-- The middle panel used for planning (before planning)-->
+        <div id="animation" class="plan-panel" onmousemove="showButtons(event)"></div>
+        <div id="plan-wrapper" class="planWrapper" onmousemove="showButtons(event)">
+            <!-- Items moved from the right panel-->
+            <div class="planList">
+                <div class="planItem" style="display: none;">
+                    <div class="planItemWrapper">
+                        <div class="plan-item-controls"></div>
+                        <div class="plan-item-icon"><i class="fa fa-picture-o" style="line-height: inherit;"></i></div>
+                    </div>
+                    <div style="height: 10px; width: 10px"></div>
+                </div>
+            </div>
+            <!--Calendar control-->
+            <div class="calendarWrapper">
+                <div class="mbsc-w-p dwc">
+                    <div class="dwwc" style="max-width:600px;">
+                        <!-- Enumeration for week days-->
+                        <div class="dwfl">
+                            <div class="dwwl dwwl0">
+                                <div aria-live="off" aria-label="Cities" role="listbox" class="dwww">
+                                    <div id="0" class="dww" onwheel="onScroll(event, this)" onmouseup="selectItem(event, this)">
+                                        <div class="dw-ul">
+                                            <div class="dw-bf">
+                                                <div role="option" aria-selected="true" class="dw-li dw-v dw-sel" data-val="" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">Mon</div>
+                                                </div>
+                                                <div role="option" aria-selected="false" class="dw-li dw-v" data-val="1" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">Tue</div>
+                                                </div>
+                                                <div role="option" aria-selected="false" class="dw-li dw-v" data-val="2" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">Wed</div>
+                                                </div>
+                                                <div role="option" aria-selected="true" class="dw-li dw-v dw-sel" data-val="" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">Thu</div>
+                                                </div>
+                                                <div role="option" aria-selected="false" class="dw-li dw-v" data-val="1" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">Fri</div>
+                                                </div>
+                                                <div role="option" aria-selected="false" class="dw-li dw-v" data-val="2" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">Sat</div>
+                                                </div>
+                                                <div role="option" aria-selected="true" class="dw-li dw-v dw-sel" data-val="" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">Sun</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="dwwo"></div>
+                                </div>
+                                <div class="dwwol" style="height:30px;"></div>
+                            </div>
+                        </div>
+                        <!-- Enumeration for hours-->
+                        <div class="dwfl">
+                            <div class="dwwl dwwl1">
+                                <div aria-live="off" aria-label="Cities" role="listbox" class="dwww">
+                                    <div id="1" class="dww" onwheel="onScroll(event, this)" onmouseup="selectItem(event, this)">
+                                        <div class="dw-ul">
+                                            <div class="dw-bf">
+                                                <div role="option" aria-selected="true" class="dw-li dw-v dw-sel" data-val="" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">1</div>
+                                                </div>
+                                                <div role="option" aria-selected="false" class="dw-li dw-v" data-val="1" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">2</div>
+                                                </div>
+                                                <div role="option" aria-selected="false" class="dw-li dw-v" data-val="2" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">3</div>
+                                                </div>
+                                                <div role="option" aria-selected="true" class="dw-li dw-v dw-sel" data-val="" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">4</div>
+                                                </div>
+                                                <div role="option" aria-selected="false" class="dw-li dw-v" data-val="1" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">5</div>
+                                                </div>
+                                                <div role="option" aria-selected="false" class="dw-li dw-v" data-val="2" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">6</div>
+                                                </div>
+                                                <div role="option" aria-selected="true" class="dw-li dw-v dw-sel" data-val="" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">7</div>
+                                                </div>
+                                                <div role="option" aria-selected="true" class="dw-li dw-v dw-sel" data-val="" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">8</div>
+                                                </div>
+                                                <div role="option" aria-selected="true" class="dw-li dw-v dw-sel" data-val="" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">9</div>
+                                                </div>
+                                                <div role="option" aria-selected="true" class="dw-li dw-v dw-sel" data-val="" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">10</div>
+                                                </div>
+                                                <div role="option" aria-selected="true" class="dw-li dw-v dw-sel" data-val="" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">11</div>
+                                                </div>
+                                                <div role="option" aria-selected="true" class="dw-li dw-v dw-sel" data-val="" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">12</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="dwwo"></div>
+                                </div>
+                                <div class="dwwol" style="height:30px;"></div>
+                            </div>
+                        </div>
+                        <!-- Enumeration for minutes-->
+                        <div class="dwfl">
+                            <div class="dwwl dwwl2">
+                                <div aria-live="off" aria-label="Cities" role="listbox" class="dwww">
+                                    <div id="2" class="dww" onwheel="onScroll(event, this)" onmouseup="selectItem(event, this)">
+                                        <div class="dw-ul">
+                                            <div class="dw-bf">
+                                                <div role="option" aria-selected="true" class="dw-li dw-v dw-sel" data-val="" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">00</div>
+                                                </div>
+                                                <div role="option" aria-selected="true" class="dw-li dw-v dw-sel" data-val="" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">05</div>
+                                                </div>
+                                                <div role="option" aria-selected="false" class="dw-li dw-v" data-val="1" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">10</div>
+                                                </div>
+                                                <div role="option" aria-selected="true" class="dw-li dw-v dw-sel" data-val="" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">15</div>
+                                                </div>
+                                                <div role="option" aria-selected="false" class="dw-li dw-v" data-val="2" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">20</div>
+                                                </div>
+                                                <div role="option" aria-selected="true" class="dw-li dw-v dw-sel" data-val="" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">25</div>
+                                                </div>
+                                                <div role="option" aria-selected="true" class="dw-li dw-v dw-sel" data-val="" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">30</div>
+                                                </div>
+                                                <div role="option" aria-selected="true" class="dw-li dw-v dw-sel" data-val="" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">35</div>
+                                                </div>
+                                                <div role="option" aria-selected="false" class="dw-li dw-v" data-val="1" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">30</div>
+                                                </div>
+                                                <div role="option" aria-selected="true" class="dw-li dw-v dw-sel" data-val="" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">45</div>
+                                                </div>
+                                                <div role="option" aria-selected="false" class="dw-li dw-v" data-val="2" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">50</div>
+                                                </div>
+                                                <div role="option" aria-selected="true" class="dw-li dw-v dw-sel" data-val="" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">55</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="dwwo"></div>
+                                </div>
+                                <div class="dwwol" style="height:30px;"></div>
+                            </div>
+                        </div>
+                        <!-- Enumeration for AM/PM-->
+                        <div class="dwfl">
+                            <div class="dwwl dwwl3">
+                                <div aria-live="off" aria-label="Cities" role="listbox" class="dwww">
+                                    <div id="3" class="dww" onwheel="onScroll(event, this)" onmouseup="selectItem(event, this)">
+                                        <div class="dw-ul">
+                                            <div class="dw-bf">
+                                                <div role="option" aria-selected="true" class="dw-li dw-v dw-sel" data-val="" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">AM</div>
+                                                </div>
+                                                <div role="option" aria-selected="false" class="dw-li dw-v" data-val="1" style="height:30px;line-height:30px;">
+                                                    <div class="dw-i">PM</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="dwwo"></div>
+                                </div>
+                                <div class="dwwol" style="height:30px;"></div>
+                            </div>
+                        </div>
+                        <!-- Show "Depart at" in the middle-->
+                        <div style="min-width:90px;text-align:center;vertical-align:middle;line-height:94px;">Depart at</div>
+                    </div>
+                </div>
+            </div>
+            <!-- The middle panel used for planning (after planning)-->
+            <div class="startTimerWrapper" style="display: none;">
+                <div class="start-timer-controls"></div>
+                <div class="start-timer-icon"></div>
+            </div>
+            <div class="planResultList">
+                <div class="planResultItem" style="display: none;">
+                    <div style="height: 10px; width: 10px"></div>
+                    <div class="planResultItemWrapper">
+                        <div class="result-item-controls"></div>
+                        <div class="result-item-icon"><i class="fa fa-picture-o" style="line-height: inherit;"></i></div>
+                    </div>
+                    <div style="height: 10px; width: 10px"></div>
+                    <div class="showDistance"></div>
+                </div>
+            </div>
+            <!--<div id="get-plan-button" class="triangle-down"></div>-->
+            <!--Remember that the dimension of canvas cannot be set by css class-->
+            <a href="javascript:planIt();"><canvas id="canvas" width="312px" height="100px" class="triangle-down"></canvas></a>
+        </div>
+        
+        <!-- Buttons that used to expand or collapse the middle panel-->
+        <div class="middleButtons">
+            <button id="lb" class="lbutton" onclick="expandOrCollapsePanel()"></button>
+            <button id="rb" class="rbutton" onclick="expandOrCollapsePanel()"></button>
+        </div>
+        <div id="rightPanel" class="rpanel" onmousemove="hideButtons(event)"></div>
+    </div>
+
+    <div id="menu">
+      <button id="bac-button" type="button" onclick="changeBackGround('map-canvas', 'bg', 'map-button', 'bac-button')">Enter Maps</button>
+    </div>
+    
+    <!--z-index < 0 means that the current div is at the bottom layer of the page, all elements will stay above it-->
+    <div id="bg" style="z-index:-1">   
+      <button id="map-button" type="button" onclick="changeBackGround('map-canvas', 'bg', 'map-button', 'bac-button')" style="display:none">changeBackGround</button>
+      <button id="plan-button" type="button" onclick="findShortestPlan()">plan</button>
+      <img src="background.jpg" alt="" />
+    </div>
+
+</body>
+
+</html>
+
